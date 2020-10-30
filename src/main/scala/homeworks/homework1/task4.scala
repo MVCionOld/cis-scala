@@ -7,7 +7,10 @@ object task4 extends App {
    * Если определен только один Option, нужно вернуть его.
    * Если ни один не определен, нужно вернуть None.
    */
-  def optionPairMax(option1: Option[Int], option2: Option[Int]): Option[Int] = ???
+  def optionPairMax(option1: Option[Int], option2: Option[Int]): Option[Int] = option1 match{
+    case Some(value) => Some(Math.max(value, option2.getOrElse(value)))
+    case None => option2
+  }
 
   println(optionPairMax(Some(3), Some(5)))
   // Some(5)

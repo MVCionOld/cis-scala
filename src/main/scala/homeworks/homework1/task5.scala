@@ -6,7 +6,10 @@ object task5 extends App {
    * Если оба значения определены, возвращается их произведение.
    * Если хотя бы одно значение не определено, возвращается None.
    */
-  def optionProduct(option1: Option[Int], option2: Option[Int]): Option[Int] = ???
+  def optionProduct(option1: Option[Int], option2: Option[Int]): Option[Int] = for{
+    lhs <- option1
+    rhs <- option2
+  } yield lhs * rhs
 
   println(optionProduct(Some(3), Some(5)))
   // Some(15)
