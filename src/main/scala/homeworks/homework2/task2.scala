@@ -5,7 +5,13 @@ object task2 extends App {
   // * если входной список содержит только Some[A], то нужно вернуть Some[List[A]] со списком такой же длины,
   //   где внутри списка лежат распакованные значения из входного списка в том же порядке;
   // * иначе нужно вернуть None.
-  def traverse[A](list: List[Option[A]]): Option[List[A]] = ???
+  def traverse[A](list: List[Option[A]]): Option[List[A]] =
+    list.foldRight[Option[List[A]]](Some(Nil)){
+      (itemOpt, itemsOpt) => (itemOpt, itemsOpt) match {
+        case (Some(item), Some(items)) => Some(item :: items)
+        case _                         => None
+      }
+    }
 
   println(traverse(Some('a') :: Some('b') :: Some('c') :: Nil))
   // Some(List(a, b, c)
@@ -18,7 +24,13 @@ object task2 extends App {
   //   которые в списке находились внутри Left[A, *], порядок не важен;
   // * во втором элементе возвращаемой пары должны находитсья все значения типа B,
   //   которые в списке находились внутри Right[*, B], порядок не важен.
-  def splitEither[A, B](list: List[Either[A, B]]): (List[A], List[B]) = ???
+  def splitEither[A, B](list: List[Either[A, B]]): (List[A], List[B]) =
+    list.foldRight[(List[A], List[B])](Tuple2(Nil, Nil)) {
+      (item, lists) => (item, lists) match {
+        case (Right(it), Tuple2(leftItems, rightItems)) => (leftItems, it :: rightItems)
+        case (Left(it), Tuple2(leftItems, rightItems))  => (it :: leftItems, rightItems)
+      }
+    }
 
   println(splitEither(Right(1) :: Right(2) :: Right(3) :: Nil))
   // (List(), List(3, 2, 1)
@@ -31,7 +43,21 @@ object task2 extends App {
   //   то нужно вернуть Right[*, List[B]] со всеми элементами типа B из входного списка, порядок не важен;
   // * если входной список содержит хотя бы один Left[A, *],
   //   то нужно вернуть Left[List[A], *] со всеми элементами типа A из входного списка, порядок не важен.
-  def validate[A, B](list: List[Either[A, B]]): Either[List[A], List[B]] = ???
+  def validate[A, B](list: List[Either[A, B]])/*: Either[List[A], List[B]]*/ = {
+    val validated: (List[A], List[B]) =
+      list.foldRight[(List[A], List[B])](Tuple2(Nil, Nil)) {
+        (item, lists) =>
+          (item, lists) match {
+            case (Right(it), Tuple2(Nil, rightItems)) => (Nil, it :: rightItems)
+            case (Right(_), Tuple2(leftItems, _)) => (leftItems, Nil)
+            case (Left(it), Tuple2(leftItems, _)) => (it :: leftItems, Nil)
+          }
+      }
+    validated match {
+      case (leftItems, Nil) => Left(leftItems)
+      case (_, rightItems)  => Right(rightItems)
+    }
+  }
 
   println(validate(Right(1) :: Right(2) :: Right(3) :: Nil))
   // Right(List(3, 2, 1))

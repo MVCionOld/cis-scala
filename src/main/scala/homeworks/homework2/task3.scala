@@ -14,12 +14,16 @@ object task3 extends App {
   //
   // Большинство методов NonEmptyList работают так же, как у обычного List,
   // но некоторые операции, например, head более безопасны, так как не бросают исключений
-  def combineErrors[E, A](a: Either[NonEmptyList[E], A])(implicit semigroupE: Semigroup[E]): Either[E, A] = ???
+  def combineErrors[E, A](a: Either[NonEmptyList[E], A])(implicit semigroupE: Semigroup[E]): Either[E, A] =
+    a match {
+      case Right(value)     => Right(value)
+      case Left(errorsList) => Left(errorsList.reduceLeft(semigroupE.combine))
+    }
 
-  implicit object throwableSemigroup extends Semigroup[Throwable] {
-    def combine(x: Throwable, y: Throwable): Throwable =
-      new Exception(s"${x.getMessage}, ${y.getMessage}")
+  implicit object semigroupE extends Semigroup[Throwable] {
+    override def combine(x: Throwable, y: Throwable): Throwable = new Exception(s"${x.getMessage}, ${y.getMessage}")
   }
+
 
   println(combineErrors(Right(123)))
   // Right(123)
@@ -39,7 +43,22 @@ object task3 extends App {
   //   (причем значение из первого массива будет первым аргументом функции combine, а значение из второго массива будет вторым)
   // * если ключ есть только в одном из массивов, то в результирующем массиве будет этот ключ c таким же значением
   // * если ключа нет ни в одном массиве, то в результирующем массиве его тоже не будет
-  def mergeMaps[K, V](left: Map[K, V], right: Map[K, V])(implicit semigroupV: Semigroup[V]): Map[K, V] = ???
+  def mergeMaps[K, V](left: Map[K, V], right: Map[K, V])(implicit semigroupV: Semigroup[V]): Map[K, V] = {
+    val leftKeys = left.keys.toList
+    val rightKeys = right.keys.toList
+    val keys = (leftKeys ::: rightKeys).distinct
+    keys.foldRight[List[(K, V)]](Nil){
+      (key, items) => (left.get(key): @unchecked, right.get(key): @unchecked) match {
+        case (Some(leftItem), Some(rightItem)) => key -> semigroupV.combine(leftItem, rightItem) :: items
+        case (Some(leftItem), None)            => key -> leftItem :: items
+        case (None, Some(rightItem))           => key -> rightItem :: items
+      }
+    }.toMap
+  }
+
+  implicit object semigroupV extends Semigroup[String] {
+    override def combine(x: String, y: String): String = x + y
+  }
 
   println(
     mergeMaps(
