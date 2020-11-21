@@ -11,7 +11,7 @@ object task4 extends App {
       this match {
         case Branch(value, left, right) if ord.compare(newValue, value) <= 0 =>
           Branch(value, left.insert(newValue), right)
-        case Branch(value, left, right) if ord.compare(value, newValue) < 0 =>
+        case Branch(value, left, right) if ord.compare(newValue, value) > 0 =>
           Branch(value, left, right.insert(newValue))
         case Leaf =>
           Branch(newValue, Leaf, Leaf)
@@ -19,12 +19,12 @@ object task4 extends App {
 
     def contains[B >: A](newValue: B)(implicit ord: Ordering[B]): Boolean =
       this match {
-        case Branch(value, left, _) if ord.compare(newValue, value) <= 0 =>
-          left.contains(newValue)
-        case Branch(value, _, right) if ord.compare(value, newValue) < 0 =>
-          right.contains(newValue)
         case Branch(value, _, _) if ord.compare(value, newValue) == 0 =>
           true
+        case Branch(value, left, _) if ord.compare(newValue, value) <= 0 =>
+          left.contains(newValue)
+        case Branch(value, _, right) if ord.compare(newValue, value) > 0 =>
+          right.contains(newValue)
         case Leaf =>
           false
       }
