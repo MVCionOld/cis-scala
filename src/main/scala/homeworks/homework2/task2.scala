@@ -43,7 +43,7 @@ object task2 extends App {
   //   то нужно вернуть Right[*, List[B]] со всеми элементами типа B из входного списка, порядок не важен;
   // * если входной список содержит хотя бы один Left[A, *],
   //   то нужно вернуть Left[List[A], *] со всеми элементами типа A из входного списка, порядок не важен.
-  def validate[A, B](list: List[Either[A, B]])/*: Either[List[A], List[B]]*/ = {
+  def validate[A, B](list: List[Either[A, B]]): Either[List[A], List[B]] = {
     val validated: (List[A], List[B]) =
       list.foldRight[(List[A], List[B])](Tuple2(Nil, Nil)) {
         (item, lists) =>
